@@ -22,7 +22,6 @@ async function supabaseInsert(payload) {
 const rooms = [
   { id: 'A', label: '3rd Floor Conference Room (Big)', emoji: '🏢' },
   { id: 'B', label: '3rd Floor Conference Room (Small)', emoji: '🏛️' },
-  { id: 'C', label: '7th Floor Conference Room', emoji: '🏬' },
 ];
 
 const timeSlots = [
@@ -36,7 +35,9 @@ const css = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #0a0a0f; color: #fff; overscroll-behavior: none; }
-  .app { min-height: 100vh; padding: 20px 16px 32px; background: #0a0a0f; }
+  .app { min-height: 100vh; padding: 20px 16px 32px; background: url('https://tafenergies.com/wp-content/uploads/2024/12/TAF-LOGO-Final.png') center/contain no-repeat, linear-gradient(135deg, #0a0a1a 0%, #1a0533 100%); background-attachment: fixed; }
+  .app::before { content: ''; position: fixed; inset: 0; background: rgba(5,2,20,0.82); z-index: 0; pointer-events: none; }
+  .page { position: relative; z-index: 1; }
   .menu-bg { position: fixed; inset: 0; background: url('https://tafenergies.com/wp-content/uploads/2024/12/TAF-LOGO-Final.png') center/contain no-repeat, linear-gradient(135deg, #0a0a1a 0%, #1a0533 100%); z-index: 0; }
   .menu-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(5,2,20,0.7) 0%, rgba(10,5,30,0.88) 50%, rgba(10,5,30,0.98) 100%); }
   .menu-content { position: relative; z-index: 1; }
@@ -61,7 +62,7 @@ const css = `
   .badge-approval { background: rgba(37,99,235,0.2); color: #93c5fd; border: 1px solid rgba(37,99,235,0.3); }
   .card-desc { font-size: 13px; color: #6b7280; line-height: 1.5; padding-left: 62px; }
   .info-footer { text-align: center; margin-top: 24px; font-size: 12px; color: rgba(255,255,255,0.25); }
-  .page { animation: fadeIn 0.2s ease; }
+  .page { position: relative; z-index: 1; animation: fadeIn 0.2s ease; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   .back-btn { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #9ca3af; font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: 10px; cursor: pointer; margin-bottom: 20px; transition: background 0.2s; }
   .back-btn:hover { background: rgba(255,255,255,0.1); }
@@ -226,7 +227,6 @@ function App() {
 
         {page === 'menu' && (
           <div className="page">
-            <div className="menu-bg" />
             <div className="menu-content">
             <div className="header">
               <div className="header-icon"><img src="https://images.unsplash.com/photo-1431540015161-0bf868a2d407?w=200&q=80" alt="Conference Room" /></div>
