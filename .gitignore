@@ -1,0 +1,6 @@
+.env
+__pycache__/
+*.pyc
+webapp/node_modules/
+webapp/dist/
+.ruff_cache/
