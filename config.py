@@ -38,7 +38,6 @@ ROOM_NAME: str = os.getenv("ROOM_NAME", "Conference Room A")
 ROOMS: dict[str, str] = {
     "A": os.getenv("ROOM_NAME", "Conference Room A"),
     "B": os.getenv("ROOM_B_NAME", "Conference Room B"),
-    "C": os.getenv("ROOM_C_NAME", "Conference Room C"),
 }
 
 WEBAPP_URL: str = os.getenv("WEBAPP_URL", "https://telegram-bot-for-all-conference-roo.vercel.app")
