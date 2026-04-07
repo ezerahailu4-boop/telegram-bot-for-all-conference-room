@@ -11,7 +11,7 @@ from typing import Any
 import pytz
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.memory import MemoryJobStore
-from telegram import Bot
+from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup
 
 import config
 from formatters import DIVIDER
@@ -31,6 +31,14 @@ class SchedulerService:
 
     def start(self) -> None:
         self._scheduler.start()
+        self._notified_ids: set[str] = set()
+        self._scheduler.add_job(
+            self._poll_pending_bookings,
+            trigger="interval",
+            seconds=15,
+            id="poll_pending",
+            replace_existing=True,
+        )
         logger.info("Scheduler started (timezone=%s).", config.TIMEZONE)
 
     def shutdown(self) -> None:
@@ -145,12 +153,46 @@ class SchedulerService:
         )
         await self._safe_send(user_id, text)
 
-    async def _safe_send(self, user_id: int, text: str) -> None:
+    async def _poll_pending_bookings(self) -> None:
+        from client import get_db
+        from booking_service import BookingService
+        try:
+            db = get_db()
+            service = BookingService(db)
+            bookings = service.get_pending_bookings()
+            for booking in bookings:
+                if booking["id"] in self._notified_ids:
+                    continue
+                self._notified_ids.add(booking["id"])
+                st = booking["start_time"][:5]
+                et = booking["end_time"][:5]
+                username_part = f"@{booking['username']}" if booking.get("username") else "no username"
+                room_name = config.ROOMS.get(booking.get("room_id", "A"), config.ROOM_NAME)
+                text = (
+                    f"🔔 *New Booking Request*\n"
+                    f"{DIVIDER}\n"
+                    f"🏢 *{room_name}*\n"
+                    f"👤 *{booking['full_name']}*  ·  {username_part}\n"
+                    f"📌 *{booking['topic']}*\n"
+                    f"📅 *{booking['booking_date']}*  ·  *{st} – {et}*\n"
+                    f"{DIVIDER}"
+                )
+                keyboard = InlineKeyboardMarkup([[
+                    InlineKeyboardButton("✅ Approve", callback_data=f"approve:{booking['id']}"),
+                    InlineKeyboardButton("❌ Reject", callback_data=f"reject:{booking['id']}"),
+                ]])
+                for admin_id in config.ADMIN_IDS:
+                    await self._safe_send(admin_id, text, reply_markup=keyboard)
+        except Exception as exc:
+            logger.error("Error polling pending bookings: %s", exc)
+
+    async def _safe_send(self, user_id: int, text: str, reply_markup=None) -> None:
         try:
             await self._bot.send_message(
                 chat_id=user_id,
                 text=text,
                 parse_mode="Markdown",
+                reply_markup=reply_markup,
             )
         except Exception as exc:
             logger.error("Failed to send notification to user %s: %s", user_id, exc)

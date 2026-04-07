@@ -1,6 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import WebApp from '@twa-dev/sdk';
 
+const SUPABASE_URL = 'https://kwfrnqampjsxlxlghtfg.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3ZnJucWFtcGpzeGx4bGdodGZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMjQ3ODIsImV4cCI6MjA5MDcwMDc4Mn0.q2rYdKH4d0fWRgYfyRXU0_rHxan2GaoHBGfo-zop_Cs';
+
+async function supabaseInsert(payload) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/bookings`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
 const rooms = [
   { id: 'A', label: '3rd Floor Conference Room (Big)', emoji: '🏢' },
   { id: 'B', label: '3rd Floor Conference Room (Small)', emoji: '🏛️' },
@@ -117,35 +135,73 @@ function App() {
     setTimeout(() => setSubmitError(''), 3000);
   };
 
-  const handleQuickBook = () => {
+  const handleQuickBook = async () => {
     if (!room) return showError('Please select a room');
     const now = new Date();
     const pad = (n) => String(n).padStart(2, '0');
     const bookingDate = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
     const st = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
     const et = '23:59';
-    setLoading(true);
-    WebApp.sendData(JSON.stringify({ action: 'quick_book', date: bookingDate, start_time: st, end_time: et, topic: 'Quick Book', room }));
-    setCurrentBooking({ id: Date.now().toString(), date: bookingDate, start_time: st, end_time: et, topic: 'Quick Book', room });
-    setIsBooked(true);
-    setLoading(false);
-  };
-
-  const handleRelease = () => {
-    if (!currentBooking) return;
-    setLoading(true);
-    WebApp.sendData(JSON.stringify({ action: 'quick_release', booking_id: currentBooking.id }));
-    setIsBooked(false);
-    setCurrentBooking(null);
-    setLoading(false);
-  };
-
-  const handleScheduleBook = () => {
-    if (!room || !date || !startTime || !endTime || !topic) return showError('Please fill in all fields');
-    if (startTime >= endTime) return showError('End time must be after start time');
+    const user = WebApp.initDataUnsafe?.user;
     setLoading(true);
     try {
-      WebApp.sendData(JSON.stringify({ action: 'schedule_book', date, start_time: startTime, end_time: endTime, topic, room }));
+      const data = await supabaseInsert({
+        user_id: user?.id ?? 0,
+        username: user?.username ?? null,
+        full_name: user ? `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim() : 'Unknown',
+        booking_date: bookingDate,
+        start_time: st,
+        end_time: et,
+        topic: 'Quick Book',
+        room_id: room,
+        status: 'approved',
+      });
+      setCurrentBooking({ id: data[0].id, date: bookingDate, start_time: st, end_time: et, topic: 'Quick Book', room });
+      setIsBooked(true);
+    } catch (e) {
+      showError('Booking failed. Please try again.');
+    }
+    setLoading(false);
+  };
+
+  const handleRelease = async () => {
+    if (!currentBooking) return;
+    setLoading(true);
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/bookings?id=eq.${currentBooking.id}`, {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'released' }),
+      });
+      setIsBooked(false);
+      setCurrentBooking(null);
+    } catch (e) {
+      showError('Failed to release. Please try again.');
+    }
+    setLoading(false);
+  };
+
+  const handleScheduleBook = async () => {
+    if (!room || !date || !startTime || !endTime || !topic) return showError('Please fill in all fields');
+    if (startTime >= endTime) return showError('End time must be after start time');
+    const user = WebApp.initDataUnsafe?.user;
+    setLoading(true);
+    try {
+      await supabaseInsert({
+        user_id: user?.id ?? 0,
+        username: user?.username ?? null,
+        full_name: user ? `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim() : 'Unknown',
+        booking_date: date,
+        start_time: startTime,
+        end_time: endTime,
+        topic,
+        room_id: room,
+        status: 'pending',
+      });
       setScheduleSubmitted(true);
     } catch (e) {
       showError('Failed to submit. Please try again.');
