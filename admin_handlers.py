@@ -60,19 +60,32 @@ async def cmd_pending(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         return
 
     await update.message.reply_text(
-        f"📬 *Pending Requests*\n{DIVIDER}\n"
-        f"*{len(bookings)}* request{'s' if len(bookings) > 1 else ''} awaiting review:",
-        parse_mode="Markdown",
+        f"📬 <b>Pending Requests</b>\n{DIVIDER}\n"
+        f"<b>{len(bookings)}</b> request{'s' if len(bookings) > 1 else ''} awaiting review:",
+        parse_mode="HTML",
     )
 
     for booking in bookings:
+        st = booking["start_time"][:5]
+        et = booking["end_time"][:5]
+        username_part = f"@{booking['username']}" if booking.get("username") else "no username"
+        from formatters import _room_name
+        text = (
+            f"🔔 <b>New Booking Request</b>\n"
+            f"{DIVIDER}\n"
+            f"🏢 <b>{_room_name(booking)}</b>\n"
+            f"👤 <b>{booking['full_name']}</b>  ·  {username_part}\n"
+            f"📌 <b>{booking['topic']}</b>\n"
+            f"📅 <b>{booking['booking_date']}</b>  ·  <b>{st} – {et}</b>\n"
+            f"{DIVIDER}"
+        )
         keyboard = InlineKeyboardMarkup([[
             InlineKeyboardButton("✅ Approve", callback_data=f"approve:{booking['id']}"),
             InlineKeyboardButton("❌ Reject", callback_data=f"reject:{booking['id']}"),
         ]])
         await update.message.reply_text(
-            format_pending_card(booking),
-            parse_mode="Markdown",
+            text,
+            parse_mode="HTML",
             reply_markup=keyboard,
         )
 
