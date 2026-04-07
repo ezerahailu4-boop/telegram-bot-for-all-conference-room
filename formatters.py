@@ -96,8 +96,7 @@ def format_pending_card(booking: dict[str, Any]) -> str:
         f"👤 *{booking['full_name']}*  ·  {username_part}\n"
         f"📌 *{booking['topic']}*\n"
         f"📅 *{booking['booking_date']}*  ·  *{st} – {et}*\n"
-        f"{DIVIDER}\n"
-        f"🆔 `{booking['id'][:8]}`"
+        f"{DIVIDER}"
     )
 
 
