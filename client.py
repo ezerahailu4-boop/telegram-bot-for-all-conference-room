@@ -5,8 +5,10 @@ database/client.py — Supabase client singleton with typed helper methods.
 from __future__ import annotations
 
 import logging
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from typing import Any
+
+import pytz
 
 from supabase import create_client, Client
 
@@ -101,7 +103,7 @@ class SupabaseDB:
         return result.data[0] if result.data else None
 
     def get_approved_upcoming_bookings(self) -> list[dict[str, Any]]:
-        today = date.today().isoformat()
+        today = datetime.now(pytz.timezone(config.TIMEZONE)).date().isoformat()
         result = (
             self._db.table(self.TABLE)
             .select("*")
