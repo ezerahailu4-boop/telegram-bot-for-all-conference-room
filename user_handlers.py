@@ -13,6 +13,9 @@ from telegram import (
     Update,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+    ReplyKeyboardRemove,
     WebAppInfo,
 )
 from telegram.ext import (
@@ -94,9 +97,11 @@ def _build_time_keyboard(selected_date: str, prefix: str):
 async def cmd_webapp(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "📱 *Room Booking App*\n\nTap below to open the booking interface:",
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("⚡ Open Booking App", web_app=WebAppInfo(config.WEBAPP_URL))]
-        ]),
+        reply_markup=ReplyKeyboardMarkup(
+            [[KeyboardButton("⚡ Open Booking App", web_app=WebAppInfo(config.WEBAPP_URL))]],
+            resize_keyboard=True,
+            one_time_keyboard=True,
+        ),
         parse_mode="Markdown",
     )
 
@@ -125,9 +130,10 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     text += f"\n{DIVIDER}\n⚠️ _All bookings require admin approval._"
     await update.message.reply_text(
         text,
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("📱 Open Booking App", web_app=WebAppInfo(config.WEBAPP_URL))]
-        ]),
+        reply_markup=ReplyKeyboardMarkup(
+            [[KeyboardButton("📱 Open Booking App", web_app=WebAppInfo(config.WEBAPP_URL))]],
+            resize_keyboard=True,
+        ),
         parse_mode="Markdown",
     )
 
