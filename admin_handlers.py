@@ -54,8 +54,7 @@ async def cmd_pending(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
     if not bookings:
         await update.message.reply_text(
-            f"📬 *Pending Requests*\n{DIVIDER}\n✅ No pending requests right now.",
-            parse_mode="Markdown",
+            f"📬 Pending Requests\n{DIVIDER}\n✅ No pending requests right now.",
         )
         return
 
@@ -104,8 +103,7 @@ async def callback_approve(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
     if not result.success:
         await query.edit_message_text(
-            f"⚠️ *Could not approve*\n{DIVIDER}\n{result.error}",
-            parse_mode="Markdown",
+            f"⚠️ Could not approve\n{DIVIDER}\n{result.error}",
         )
         return
 
@@ -117,22 +115,20 @@ async def callback_approve(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     room_name = config.ROOMS.get(booking.get("room_id", "A"), config.ROOM_NAME)
 
     await query.edit_message_text(
-        f"✅ *Approved*\n"
+        f"✅ Approved\n"
         f"{DIVIDER}\n"
-        f"🏢 *{room_name}*\n"
-        f"📌 *{booking['topic']}*\n"
-        f"📅 *{booking['booking_date']}*  ·  *{st} – {et}*\n"
+        f"🏢 {room_name}\n"
+        f"📌 {booking['topic']}\n"
+        f"📅 {booking['booking_date']}  ·  {st} – {et}\n"
         f"👤 {booking['full_name']}\n"
         f"{DIVIDER}\n"
-        f"_Approved by {admin.full_name}_",
-        parse_mode="Markdown",
+        f"Approved by {admin.full_name}",
     )
 
     try:
         await context.bot.send_message(
             chat_id=booking["user_id"],
             text=format_approved_confirmation(booking),
-            parse_mode="Markdown",
         )
     except Exception as exc:
         logger.warning("Could not notify user %s of approval: %s", booking["user_id"], exc)
@@ -158,8 +154,7 @@ async def callback_reject(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
     if not result.success:
         await query.edit_message_text(
-            f"⚠️ *Could not reject*\n{DIVIDER}\n{result.error}",
-            parse_mode="Markdown",
+            f"⚠️ Could not reject\n{DIVIDER}\n{result.error}",
         )
         return
 
@@ -171,22 +166,20 @@ async def callback_reject(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     room_name = config.ROOMS.get(booking.get("room_id", "A"), config.ROOM_NAME)
 
     await query.edit_message_text(
-        f"❌ *Rejected*\n"
+        f"❌ Rejected\n"
         f"{DIVIDER}\n"
-        f"🏢 *{room_name}*\n"
-        f"📌 *{booking['topic']}*\n"
-        f"📅 *{booking['booking_date']}*  ·  *{st} – {et}*\n"
+        f"🏢 {room_name}\n"
+        f"📌 {booking['topic']}\n"
+        f"📅 {booking['booking_date']}  ·  {st} – {et}\n"
         f"👤 {booking['full_name']}\n"
         f"{DIVIDER}\n"
-        f"_Rejected by {admin.full_name}_",
-        parse_mode="Markdown",
+        f"Rejected by {admin.full_name}",
     )
 
     try:
         await context.bot.send_message(
             chat_id=booking["user_id"],
             text=format_rejected_confirmation(booking),
-            parse_mode="Markdown",
         )
     except Exception as exc:
         logger.warning("Could not notify user %s of rejection: %s", booking["user_id"], exc)

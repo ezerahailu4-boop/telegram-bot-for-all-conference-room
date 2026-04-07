@@ -260,8 +260,7 @@ async def topic_received(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     if not result.success:
         await update.message.reply_text(
-            f"❌ *Booking Failed*\n{DIVIDER}\n{result.error}",
-            parse_mode="Markdown",
+            f"❌ Booking Failed\n{DIVIDER}\n{result.error}",
         )
         return ConversationHandler.END
 
@@ -271,15 +270,14 @@ async def topic_received(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     room_name = config.ROOMS.get(booking.get("room_id", "A"), config.ROOM_NAME)
     await update.message.reply_text(
-        f"✅ *Request Submitted!*\n"
+        f"✅ Request Submitted!\n"
         f"{DIVIDER}\n"
-        f"🏢 *{room_name}*\n"
-        f"📌 *{b['topic']}*\n"
-        f"📅 *{b['booking_date']}*  ·  *{st} – {et}*\n"
+        f"🏢 {room_name}\n"
+        f"📌 {b['topic']}\n"
+        f"📅 {b['booking_date']}  ·  {st} – {et}\n"
         f"{DIVIDER}\n"
         f"🕐 Waiting for admin approval.\n"
         f"You'll be notified once reviewed.",
-        parse_mode="Markdown",
     )
 
     await _notify_admins_new_request(context, b)
@@ -336,8 +334,7 @@ async def quickbook_room_callback(update: Update, context: ContextTypes.DEFAULT_
 
         if not result.success:
             await query.edit_message_text(
-                f"❌ *Quick Book Failed*\n{DIVIDER}\n{result.error}",
-                parse_mode="Markdown",
+                f"❌ Quick Book Failed\n{DIVIDER}\n{result.error}",
             )
             return ConversationHandler.END
 
@@ -345,8 +342,7 @@ async def quickbook_room_callback(update: Update, context: ContextTypes.DEFAULT_
         approve_result = service.approve_booking(result.booking["id"], admin_id)
         if not approve_result.success:
             await query.edit_message_text(
-                f"❌ *Could not confirm booking*\n{DIVIDER}\n{approve_result.error}",
-                parse_mode="Markdown",
+                f"❌ Could not confirm booking\n{DIVIDER}\n{approve_result.error}",
             )
             return ConversationHandler.END
 
@@ -357,13 +353,12 @@ async def quickbook_room_callback(update: Update, context: ContextTypes.DEFAULT_
 
         room_name = config.ROOMS.get(room_id, config.ROOM_NAME)
         await query.edit_message_text(
-            f"⚡ *Quick Booked!*\n"
+            f"⚡ Quick Booked!\n"
             f"{DIVIDER}\n"
-            f"🏢 *{room_name}*\n"
-            f"📅 *{booking_date}*  ·  *{start_time} – {end_time}*\n"
+            f"🏢 {room_name}\n"
+            f"📅 {booking_date}  ·  {start_time} – {end_time}\n"
             f"{DIVIDER}\n"
             f"Room is yours. Use /release when done. 🔓",
-            parse_mode="Markdown",
         )
         return ConversationHandler.END
 
@@ -379,9 +374,8 @@ async def cmd_release(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
     if not active:
         await update.message.reply_text(
-            f"🔓 *Release Booking*\n{DIVIDER}\n"
+            f"🔓 Release Booking\n{DIVIDER}\n"
             "You have no active bookings to release.",
-            parse_mode="Markdown",
         )
         return
 
@@ -397,9 +391,8 @@ async def cmd_release(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     keyboard.append([InlineKeyboardButton("✖️ Cancel", callback_data="cancel")])
 
     await update.message.reply_text(
-        f"🔓 *Release a Booking*\n{DIVIDER}\nSelect which booking to release:",
+        f"🔓 Release a Booking\n{DIVIDER}\nSelect which booking to release:",
         reply_markup=InlineKeyboardMarkup(keyboard),
-        parse_mode="Markdown",
     )
 
 
@@ -419,13 +412,11 @@ async def release_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
         if success:
             await query.edit_message_text(
-                f"🔓 *Booking Released*\n{DIVIDER}\nThe room is now available.",
-                parse_mode="Markdown",
+                f"🔓 Booking Released\n{DIVIDER}\nThe room is now available.",
             )
         else:
             await query.edit_message_text(
                 "❌ Could not release booking. Please try again.",
-                parse_mode="Markdown",
             )
 
 
@@ -434,7 +425,7 @@ async def cmd_today(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     db = get_db()
     service = BookingService(db)
     bookings = service.get_today_bookings(today)
-    await update.message.reply_text(format_today_list(bookings, today), parse_mode="Markdown")
+    await update.message.reply_text(format_today_list(bookings, today))
 
 
 async def cmd_mybookings(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -445,18 +436,17 @@ async def cmd_mybookings(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     if not bookings:
         await update.message.reply_text(
-            f"📋 *My Bookings*\n{DIVIDER}\n"
-            "_You have no bookings yet._\n\n"
+            f"📋 My Bookings\n{DIVIDER}\n"
+            "You have no bookings yet.\n\n"
             "Use /book to reserve a room. 📅",
-            parse_mode="Markdown",
         )
         return
 
-    lines = [f"📋 *My Bookings*\n{DIVIDER}\n"]
+    lines = [f"📋 My Bookings\n{DIVIDER}\n"]
     for i, b in enumerate(bookings, 1):
-        lines.append(f"*{i}.* {format_booking_card(b)}")
+        lines.append(f"{i}. {format_booking_card(b)}")
         lines.append("")
-    await update.message.reply_text("\n".join(lines).rstrip(), parse_mode="Markdown")
+    await update.message.reply_text("\n".join(lines).rstrip())
 
 
 async def _notify_admins_new_request(context: ContextTypes.DEFAULT_TYPE, booking: dict) -> None:
@@ -465,12 +455,12 @@ async def _notify_admins_new_request(context: ContextTypes.DEFAULT_TYPE, booking
     username_part = f"@{booking['username']}" if booking.get("username") else "no username"
 
     text = (
-        f"🔔 *New Booking Request*\n"
+        f"🔔 New Booking Request\n"
         f"{DIVIDER}\n"
-        f"🏢 *{config.ROOMS.get(booking.get('room_id', 'A'), config.ROOM_NAME)}*\n"
-        f"👤 *{booking['full_name']}*  ·  {username_part}\n"
-        f"📌 *{booking['topic']}*\n"
-        f"📅 *{booking['booking_date']}*  ·  *{st} – {et}*\n"
+        f"🏢 {config.ROOMS.get(booking.get('room_id', 'A'), config.ROOM_NAME)}\n"
+        f"👤 {booking['full_name']}  ·  {username_part}\n"
+        f"📌 {booking['topic']}\n"
+        f"📅 {booking['booking_date']}  ·  {st} – {et}\n"
         f"{DIVIDER}"
     )
 
@@ -484,7 +474,6 @@ async def _notify_admins_new_request(context: ContextTypes.DEFAULT_TYPE, booking
             await context.bot.send_message(
                 chat_id=admin_id,
                 text=text,
-                parse_mode="Markdown",
                 reply_markup=keyboard,
             )
         except Exception as exc:
@@ -524,18 +513,16 @@ async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE)
                     if scheduler:
                         scheduler.schedule_booking_jobs(approve_result.booking)
                 await update.message.reply_text(
-                    f"⚡ *Quick Booked!*\n"
+                    f"⚡ Quick Booked!\n"
                     f"{DIVIDER}\n"
-                    f"🏢 *{room_name}*\n"
-                    f"📅 *{data.get('date')}*  ·  *{data.get('start_time')} – {data.get('end_time')}*\n"
+                    f"🏢 {room_name}\n"
+                    f"📅 {data.get('date')}  ·  {data.get('start_time')} – {data.get('end_time')}\n"
                     f"{DIVIDER}\n"
-                    f"Room is yours. Tap *Release Room* when done. 🔓",
-                    parse_mode="Markdown",
+                    f"Room is yours. Tap Release Room when done. 🔓",
                 )
             else:
                 await update.message.reply_text(
-                    f"❌ *Quick Book Failed*\n{DIVIDER}\n{result.error}",
-                    parse_mode="Markdown",
+                    f"❌ Quick Book Failed\n{DIVIDER}\n{result.error}",
                 )
 
         elif action == "schedule_book":
@@ -551,21 +538,19 @@ async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE)
             )
             if result.success:
                 await update.message.reply_text(
-                    f"✅ *Request Submitted!*\n"
+                    f"✅ Request Submitted!\n"
                     f"{DIVIDER}\n"
-                    f"🏢 *{config.ROOMS.get(room, config.ROOM_NAME)}*\n"
-                    f"📌 *{data.get('topic')}*\n"
-                    f"📅 *{data.get('date')}*  ·  *{data.get('start_time')} – {data.get('end_time')}*\n"
+                    f"🏢 {config.ROOMS.get(room, config.ROOM_NAME)}\n"
+                    f"📌 {data.get('topic')}\n"
+                    f"📅 {data.get('date')}  ·  {data.get('start_time')} – {data.get('end_time')}\n"
                     f"{DIVIDER}\n"
                     f"🕐 Waiting for admin approval.\n"
                     f"You'll be notified once reviewed.",
-                    parse_mode="Markdown",
                 )
                 await _notify_admins_new_request(context, result.booking)
             else:
                 await update.message.reply_text(
-                    f"❌ *Booking Failed*\n{DIVIDER}\n{result.error}",
-                    parse_mode="Markdown",
+                    f"❌ Booking Failed\n{DIVIDER}\n{result.error}",
                 )
 
         elif action == "quick_release":
@@ -580,8 +565,7 @@ async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE)
                         break
             if released:
                 await update.message.reply_text(
-                    f"🔓 *Room Released*\n{DIVIDER}\nThe room is now available.",
-                    parse_mode="Markdown",
+                    f"🔓 Room Released\n{DIVIDER}\nThe room is now available.",
                 )
 
     except Exception as e:

@@ -122,11 +122,11 @@ class SchedulerService:
     ) -> None:
         room_name = room_name or config.ROOM_NAME
         text = (
-            f"⏰ *Reminder — {config.REMINDER_MINUTES_BEFORE} min to go!*\n"
+            f"⏰ Reminder — {config.REMINDER_MINUTES_BEFORE} min to go!\n"
             f"{DIVIDER}\n"
-            f"🏢 *{room_name}*\n"
-            f"📌 *{topic}*\n"
-            f"📅 *{date_str}*  ·  *{start_time} – {end_time}*\n"
+            f"🏢 {room_name}\n"
+            f"📌 {topic}\n"
+            f"📅 {date_str}  ·  {start_time} – {end_time}\n"
             f"{DIVIDER}\n"
             f"Please head to the room now. 🚶"
         )
@@ -143,13 +143,13 @@ class SchedulerService:
     ) -> None:
         room_name = room_name or config.ROOM_NAME
         text = (
-            f"🚀 *Your meeting has started!*\n"
+            f"🚀 Your meeting has started!\n"
             f"{DIVIDER}\n"
-            f"🏢 *{room_name}*\n"
-            f"📌 *{topic}*\n"
-            f"📅 *{date_str}*  ·  *{start_time} – {end_time}*\n"
+            f"🏢 {room_name}\n"
+            f"📌 {topic}\n"
+            f"📅 {date_str}  ·  {start_time} – {end_time}\n"
             f"{DIVIDER}\n"
-            f"The room is yours until *{end_time}*. Good luck! 👋"
+            f"The room is yours until {end_time}. Good luck! 👋"
         )
         await self._safe_send(user_id, text)
 
@@ -169,12 +169,12 @@ class SchedulerService:
                 username_part = f"@{booking['username']}" if booking.get("username") else "no username"
                 room_name = config.ROOMS.get(booking.get("room_id", "A"), config.ROOM_NAME)
                 text = (
-                    f"🔔 *New Booking Request*\n"
+                    f"🔔 New Booking Request\n"
                     f"{DIVIDER}\n"
-                    f"🏢 *{room_name}*\n"
-                    f"👤 *{booking['full_name']}*  ·  {username_part}\n"
-                    f"📌 *{booking['topic']}*\n"
-                    f"📅 *{booking['booking_date']}*  ·  *{st} – {et}*\n"
+                    f"🏢 {room_name}\n"
+                    f"👤 {booking['full_name']}  ·  {username_part}\n"
+                    f"📌 {booking['topic']}\n"
+                    f"📅 {booking['booking_date']}  ·  {st} – {et}\n"
                     f"{DIVIDER}"
                 )
                 keyboard = InlineKeyboardMarkup([[
@@ -191,7 +191,6 @@ class SchedulerService:
             await self._bot.send_message(
                 chat_id=user_id,
                 text=text,
-                parse_mode="Markdown",
                 reply_markup=reply_markup,
             )
         except Exception as exc:
