@@ -85,7 +85,7 @@ def main() -> None:
     register_admin_handlers(app)
 
     app.run_polling(
-        allowed_updates=["message", "callback_query"],
+        allowed_updates=["message", "callback_query", "web_app_data"],
         drop_pending_updates=True,
     )
 
